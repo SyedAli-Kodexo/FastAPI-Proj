@@ -1,4 +1,5 @@
 from sqlalchemy import Integer,String,Column
+from pydantic import BaseModel
 from database import Base,engine
 
 class Student(Base):
@@ -19,7 +20,7 @@ class Student(Base):
 Base.metadata.create_all(bind=engine)
 
 
-class Token(Base):
+class Token(BaseModel):
     access_token: str
     refresh_token: str
     token_type:str

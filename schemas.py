@@ -12,7 +12,7 @@ class StudentBase(BaseModel):
     age:int=Field(...,gt=2,lt=20)
     username:str=Field(...,min_length=3,max_length=20)
     password:str=Field(...,min_length=6,max_length=20)
-    email:str=Field(...,regex=r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$")
+    email:str=Field(...,min_length=5,max_length=200,pattern=r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$")
     address:StudentAddress
     @validator("name")
     def name_change(cls,v):

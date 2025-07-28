@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 
 class AuthMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
-        if request.url.path.rstrip("/") in ["/login","/register","docs","/openapi.json","/redoc"]:
+        if request.url.path.rstrip("/") in ["/login","/register","docs","/openapi.json","/favicon.ico","/redoc"]:
             return await call_next(request)
         
         token=request.cookies.get("access_token")

@@ -1,4 +1,5 @@
 """
+TOO MUCH ERROR FOR NOW right now error is " {"detail":"Invalid token"}"
 test.py is not fully implemented
 """
 
@@ -37,7 +38,39 @@ def hash_password(password:str):
 def verify_password(plainpassword,hashed_password):
     return pw_context.verify(plainpassword,hashed_password)
 
-
+#########################################################################
+@app.post("/student/register",response_model=stdResponse)
+async def register_student(student:StudentBase,db:Session=Depends(get_db)):
+    existing_user=db.query(Student).filter(Student.username==student.username).first()
+    if existing_user:
+        raise HTTPException(status_code=400, detail="User already exists")
+    hash_pw=hash_password(student.password)
+    db_student=Student(
+        name=student.name,
+        age=student.age,
+        username=student.username,
+        password=hash_pw,
+        email=student.email,
+        street=student.address.street,
+        housenum=student.address.housenum,
+        zipcode=student.address.zipcode
+    )
+    db.add(db_student)
+    db.commit()
+    db.refresh(db_student)
+    return stdResponse(
+        id=db_student.id,
+        name=db_student.name,
+        age=db_student.age,
+        username=db_student.username,
+        password=hash_pw,  # Do not return actual password
+        email=db_student.email,
+        address={
+            "street": db_student.street,
+            "housenum": db_student.housenum,
+            "zipcode": db_student.zipcode
+        }
+    )
 
 @app.get("/student/",response_model=list[stdResponse])
 async def show_all_student(db:Session=Depends(get_db)):
