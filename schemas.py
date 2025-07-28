@@ -10,6 +10,9 @@ class StudentAddress(BaseModel):
 class StudentBase(BaseModel):
     name:str
     age:int=Field(...,gt=2,lt=20)
+    username:str=Field(...,min_length=3,max_length=20)
+    password:str=Field(...,min_length=6,max_length=20)
+    email:str=Field(...,regex=r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$")
     address:StudentAddress
     @validator("name")
     def name_change(cls,v):
@@ -20,6 +23,8 @@ class StudentBase(BaseModel):
 
 class patchStudent(BaseModel):
     name:Optional[str]=None
+    password:Optional[str]=None
+    email:Optional[str]=None
     age:Optional[int]=None
     street: Optional[str] = None
     housenum: Optional[str] = None

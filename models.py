@@ -3,6 +3,9 @@ from database import Base,engine
 
 class Student(Base):
     __tablename__="student"
+    username = Column(String(50), unique=True, index=True)
+    password = Column(String(50))
+    email = Column(String(50), unique=True, index=True)
     id=Column(Integer,primary_key=True,index=True)
     name=Column(String(20),index=True)
     age=Column(Integer)
@@ -14,3 +17,9 @@ class Student(Base):
         return f"<Student(id={self.id}, name={self.name}, age={self.age}, street={self.street}, housenum={self.housenum}, zipcode={self.zipcode})>"
 
 Base.metadata.create_all(bind=engine)
+
+
+class Token(Base):
+    access_token: str
+    refresh_token: str
+    token_type:str

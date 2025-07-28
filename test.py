@@ -1,11 +1,43 @@
-from fastapi import FastAPI,HTTPException,Depends
+"""
+test.py is not fully implemented
+"""
+
+from fastapi import FastAPI,HTTPException,Depends,status,Request
 from sqlalchemy.orm import Session
 from database import get_db
-from models import Student
+from models import Student,Token
 from schemas import stdResponse,StudentBase,patchStudent
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from passlib.context import CryptContext
+import time
+from tokens import create_access_token,verufy_token,create_refresh_token
+from middleware import AuthMiddleware
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
+from rate_limiting_middleware import RateLimitingMiddleware
+from fastapi.responses import JSONResponse
+
 
 
 app=FastAPI()
+app.add_middleware(GZipMiddleware, minimum_size=1000)
+app.add_middleware(CORSMiddleware,
+                   allow_origins=["*"],
+                   allow_credentials=True,
+                   allow_methods=["*"],
+                   allow_headers=["*"])
+app.add_middleware(AuthMiddleware)
+app.add_middleware(RateLimitingMiddleware, max_requests=10, time_window=60)
+oauth2=OAuth2PasswordBearer(tokenUrl="/login")
+pw_context=CryptContext(schemes=["bcrypt"],deprecated="auto")
+
+def hash_password(password:str):
+    return pw_context.hash(password)
+
+def verify_password(plainpassword,hashed_password):
+    return pw_context.verify(plainpassword,hashed_password)
+
+
 
 @app.get("/student/",response_model=list[stdResponse])
 async def show_all_student(db:Session=Depends(get_db)):
