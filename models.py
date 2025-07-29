@@ -5,7 +5,7 @@ from database import Base,engine
 class Student(Base):
     __tablename__="student"
     username = Column(String(50), unique=True, index=True)
-    password = Column(String(50))
+    password = Column(String)
     email = Column(String(50), unique=True, index=True)
     id=Column(Integer,primary_key=True,index=True)
     name=Column(String(20),index=True)
@@ -15,7 +15,7 @@ class Student(Base):
     zipcode = Column(Integer)
     
     def __repr__(self):
-        return f"<Student(id={self.id}, name={self.name}, age={self.age}, street={self.street}, housenum={self.housenum}, zipcode={self.zipcode})>"
+        return f"<Student(id={self.id},username:{self.username},password={self.password},email={self.email}, name={self.name}, age={self.age}, street={self.street}, housenum={self.housenum}, zipcode={self.zipcode})>"
 
 Base.metadata.create_all(bind=engine)
 

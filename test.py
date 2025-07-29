@@ -3,8 +3,9 @@ TOO MUCH ERROR FOR NOW right now error is " {"detail":"Invalid token"}"
 test.py is not fully implemented
 """
 
-from fastapi import FastAPI,HTTPException,Depends,status,Request
+from fastapi import FastAPI,HTTPException,Depends,status,Request,Form
 from sqlalchemy.orm import Session
+from sqlalchemy import or_
 from database import get_db
 from models import Student,Token
 from schemas import stdResponse,StudentBase,patchStudent
@@ -38,12 +39,15 @@ def hash_password(password:str):
 def verify_password(plainpassword,hashed_password):
     return pw_context.verify(plainpassword,hashed_password)
 
-#########################################################################
 @app.post("/student/register",response_model=stdResponse)
 async def register_student(student:StudentBase,db:Session=Depends(get_db)):
-    existing_user=db.query(Student).filter(Student.username==student.username).first()
+    existing_user=db.query(Student).filter(or_(Student.username==student.username, Student.email==student.email)).first()
     if existing_user:
-        raise HTTPException(status_code=400, detail="User already exists")
+        if student.email==existing_user.email:
+            raise HTTPException(status_code=400, detail="This email already exists")
+        elif student.username==existing_user.username:
+            raise HTTPException(status_code=400, detail="This username already exists")
+        
     hash_pw=hash_password(student.password)
     db_student=Student(
         name=student.name,
@@ -63,7 +67,7 @@ async def register_student(student:StudentBase,db:Session=Depends(get_db)):
         name=db_student.name,
         age=db_student.age,
         username=db_student.username,
-        password=hash_pw,  # Do not return actual password
+        password=hash_pw,
         email=db_student.email,
         address={
             "street": db_student.street,
@@ -71,6 +75,23 @@ async def register_student(student:StudentBase,db:Session=Depends(get_db)):
             "zipcode": db_student.zipcode
         }
     )
+#########################################################################
+@app.post("/student/login",response_model=Token)
+async def login_student(username:str=Form(...),password:str=Form(...),db:Session=Depends(get_db)):
+    user=db.query(Student).filter(Student.username==username).first()
+    if not user: 
+        raise HTTPException(status_code=400,detail="Invalid username or password")
+    if not verify_password(password,user.password):
+        raise HTTPException(status_code=400, detail="Invalid password")
+    
+    access_token=create_access_token(data={"sub":user.username})
+    refresh_token=create_refresh_token(data={"sub":user.username})
+    response = JSONResponse(content={"message": "Login successful"})
+
+    response.set_cookie(key="access_token",value=access_token,httponly=True,samesite="lax")
+    response.set_cookie(key="refresh_token",value=refresh_token,httponly=True,samesite="lax")
+    return response
+
 
 @app.get("/student/",response_model=list[stdResponse])
 async def show_all_student(db:Session=Depends(get_db)):

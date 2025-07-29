@@ -9,7 +9,7 @@ def create_access_token(data:dict,expire_time:timedelta|None=None):
     to_encode=data.copy()
     access_token_expires=(datetime.utcnow()+(expire_time or timedelta(seconds=access_token_expire_seconds)))
     to_encode.update({"exp":access_token_expires})
-    encode_JWT=jwt.encode(to_encode,secret_key,algorithm=[algo])
+    encode_JWT=jwt.encode(to_encode,secret_key,algorithm=algo)
     return encode_JWT
 
 
@@ -17,7 +17,7 @@ def create_refresh_token(data:dict,expire_time:timedelta|None=None):
     to_encode=data.copy()
     refresh_token_expires=(datetime.utcnow()+(expire_time or timedelta(seconds=refresh_token_expire_seconds)))
     to_encode.update({"exp":refresh_token_expires})
-    encoded_jwt=jwt.encode(to_encode,secret_key,algorithm=[algo])
+    encoded_jwt=jwt.encode(to_encode,secret_key,algorithm=algo)
     return encoded_jwt
 
 
